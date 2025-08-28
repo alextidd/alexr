@@ -1,4 +1,25 @@
-genotype_variants <- function(variants, bam, min_bq, min_mq, mask) {
+#' Genotype variants in a BAM file using deepSNV::bam2R.
+#'
+#' This function genotypes a set of variants by querying a BAM file and
+#' calculating variant allele frequencies (VAF) for each variant. It supports
+#' SNVs, insertions, and deletions, but filters out complex variants.
+#'
+#' @param variants A data frame containing variant information with columns: chr, pos, ref, alt.
+#' @param bam Path to the BAM file to query for genotyping.
+#' @param min_bq Minimum base quality score for reads.
+#' @param min_mq Minimum mapping quality score for reads.
+#' @param mask Genomic regions to mask during analysis.
+#'
+#' @return A tibble with columns: chr, pos, ref, alt, total_depth, alt_depth, alt_vaf.
+#'   The alt_vaf column contains the variant allele frequency calculated as alt_depth / total_depth.
+#' @examples
+#' \dontrun{
+#' variants <- data.frame(chr = "1", pos = 1000, ref = "A", alt = "T")
+#' genotype_variants(variants, "sample.bam", min_bq = 30, min_mq = 30, mask = 3844)
+#' }
+#'
+#' @export
+genotype_variants <- function(variants, bam, min_bq, min_mq, mask = 0) {
   
   # get and type variants
   vars <-
