@@ -28,10 +28,10 @@
 #' \dontrun{
 #' # Render a report located at "reports/20250820_mutation_analysis/report.Rmd"
 #' render_report("reports/20250820_mutation_analysis/report.Rmd")
-#' 
+#'
 #' # Force rerun of cached chunks
 #' render_report("reports/20250820_mutation_analysis/report.Rmd", rerun = TRUE)
-#' 
+#'
 #' # This would create:
 #' # - Output directory: reports/20250820_mutation_analysis/20250828/
 #' # - HTML file: 20250828_mutation_analysis.html
