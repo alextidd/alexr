@@ -5,7 +5,7 @@
 #' and passes parameters for title, cache path, and rerun options.
 #'
 #' @param report Character string specifying the path to the R Markdown file to render.
-#'   Expected to be in format "reports/{date_created}_{name}/report.Rmd" where the subdirectory
+#'   Expected to be in format \code{reports/date_name/report.Rmd} where the subdirectory
 #'   name will be used for organizing outputs.
 #' @param rerun Logical indicating whether to rerun cached chunks. Default is FALSE.
 #'   When TRUE, forces re-execution of cached code chunks.
@@ -13,14 +13,14 @@
 #' @return Invisibly returns the path to the rendered HTML file. The function is
 #'   called primarily for its side effect of creating the rendered report.
 #'
-#' @details 
+#' @details
 #' The function performs the following operations:
 #' \itemize{
 #'   \item Extracts subdirectory name from the report path (second path component)
 #'   \item Removes prefix from subdirectory name to create a clean report name
-#'   \item Creates output directory: "reports/{date_created}_{name}/YYYYMMDD/"
-#'   \item Generates output filename: "YYYYMMDD_{name}.html"
-#'   \item Sets up cache directory: "reports/{date_created}_{name}/YYYYMMDD/YYYYMMDD_{name}_cache/"
+#'   \item Creates output directory: \code{reports/date_name/YYYYMMDD/}
+#'   \item Generates output filename: \code{YYYYMMDD_name.html}
+#'   \item Sets up cache directory: \code{reports/date_name/YYYYMMDD/YYYYMMDD_name_cache/}
 #'   \item Passes parameters to the R Markdown document: title, cache_path, rerun
 #' }
 #'

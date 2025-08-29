@@ -14,7 +14,7 @@
 #'     \item{total_depth}{Total sequencing depth at the position}
 #'   }
 #' @param p_title Character string for the plot title prefix. Default is an empty string.
-#'   The final title will be "p_title\nVAF distribution".
+#'   The final title will be "p_title VAF distribution".
 #'
 #' @return Invisibly returns NULL. The function prints the plot directly using print().
 #'

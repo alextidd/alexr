@@ -18,7 +18,7 @@ plot_vaf_dist(p_dat, p_title = "")
 }}
 
 \item{p_title}{Character string for the plot title prefix. Default is an empty string.
-The final title will be "p_title\nVAF distribution".}
+The final title will be "p_title VAF distribution".}
 }
 \value{
 Invisibly returns NULL. The function prints the plot directly using print().
