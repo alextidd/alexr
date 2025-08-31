@@ -20,7 +20,7 @@
 #'
 #' @export
 genotype_variants <- function(variants, bam, min_bq, min_mq, mask = 0) {
-  
+
   # get and type variants
   vars <-
     variants %>%
