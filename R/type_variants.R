@@ -62,15 +62,15 @@
 #' )
 #' 
 #' # Basic typing without splitting complex variants
-#' typed <- type_mutations(mutations)
+#' typed <- type_variants(mutations)
 #' 
 #' # Typing with complex variant splitting
-#' typed_split <- type_mutations(mutations, split_complex = TRUE)
+#' typed_split <- type_variants(mutations, split_complex = TRUE)
 #' }
 #'
 #' @importFrom dplyr mutate case_when filter group_by across reframe select bind_rows
 #' @export
-type_mutations <- function(variants, split_complex = FALSE) {
+type_variants <- function(variants, split_complex = FALSE) {
   typed_variants <-
     variants %>%
     dplyr::mutate(type = dplyr::case_when(

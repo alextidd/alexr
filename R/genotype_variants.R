@@ -22,13 +22,7 @@
 genotype_variants <- function(variants, bam, min_bq, min_mq, mask = 0) {
 
   # get and type variants
-  vars <-
-    variants %>%
-    dplyr::mutate(
-      type = dplyr::case_when(nchar(ref) == 1 & nchar(alt) == 1 ~ "snv",
-                              nchar(ref) == 1 & nchar(alt) > 1 ~ "ins",
-                              nchar(ref) > 1 & nchar(alt) == 1 ~ "del",
-                              TRUE ~ "complex"))
+  vars <- alexr::type_variants(variants)
 
   # check for variants that are not snv / ins / del
   if ("complex" %in% vars$type) {
