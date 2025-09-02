@@ -58,13 +58,13 @@ genotype_variants <- function(variants, bam, min_bq, min_mq, mask = 0) {
 
       # calculate total depth
       total_depth <-
-        sum(calls[, c("A", "C", "G", "T", "a", "c", "g", "t", "-", "_")],
+        sum(calls[, c("A", "C", "G", "T", "a", "c", "g", "t", "-", "_", "N", "n")],
             na.rm = TRUE)
 
       # calculate alt depth
       if (type == "del") {
         alt_depth <- sum(calls[, c("-", "_")])
-      } else if(type == "ins") {
+      } else if (type == "ins") {
         alt_depth <- sum(calls[, c("INS", "ins")])
       } else {
         alt_i <- unlist(strsplit(alt, ""))[1]
