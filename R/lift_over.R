@@ -132,7 +132,7 @@ lift_over <- function(variants, lift_over_chain, keep_old_pos = FALSE) {
       lifted %>%
       dplyr::transmute(chr = seqnames, start, end,
                        start_old, end_old) %>%
-      dplyr::inner_join(variants %>% dplyr::mutate(start_old = start,
+      dplyr::inner_join(variants %>% dplyr::rename(start_old = start,
                                                    end_old = end))
     if (keep_old_pos == FALSE) {
       lifted <- lifted %>% dplyr::select(-start_old, -end_old)
@@ -143,7 +143,7 @@ lift_over <- function(variants, lift_over_chain, keep_old_pos = FALSE) {
     lifted <-
       lifted %>%
       dplyr::transmute(chr = seqnames, pos = start, pos_old) %>%
-      dplyr::inner_join(variants %>% dplyr::mutate(pos_old = pos))
+      dplyr::inner_join(variants %>% dplyr::rename(pos_old = pos))
 
     if (keep_old_pos == FALSE) {
       lifted <- lifted %>% dplyr::select(-pos_old)
