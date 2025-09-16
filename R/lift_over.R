@@ -14,10 +14,14 @@
 #'   Must contain either \code{pos} column OR both \code{start} and \code{end} columns.
 #' @param lift_over_chain Path to the liftOver chain file for coordinate conversion
 #'   between genome builds (e.g., hg19 to hg38).
+#' @param keep_old_pos Logical indicating whether to keep the original coordinates
+#'   in the output. Default is FALSE. When TRUE, original coordinates are preserved
+#'   as \code{pos_old} (for positions) or \code{start_old}/\code{end_old} (for ranges).
 #'
 #' @return A data frame with lifted coordinates and all original columns preserved.
 #'   For range data: \code{start} and \code{end} columns contain the new coordinates.
 #'   For position data: \code{pos} column contains the new coordinates.
+#'   When \code{keep_old_pos = TRUE}, original coordinates are preserved as additional columns.
 #'   Only successfully lifted coordinates are returned.
 #'
 #' @details 
@@ -29,10 +33,17 @@
 #'   \item Filters to successfully lifted coordinates only
 #'   \item Rejoins lifted coordinates with original variant data
 #'   \item Returns data with updated coordinates and all original columns
+#'   \item Optionally preserves original coordinates when \code{keep_old_pos = TRUE}
 #' }
 #'
 #' The function uses an inner join, so only variants that successfully lift over
 #' will be included in the output. Variants that fail to lift over are excluded.
+#' 
+#' When \code{keep_old_pos = TRUE}, the original coordinates are preserved as:
+#' \itemize{
+#'   \item \code{pos_old} for single position data
+#'   \item \code{start_old} and \code{end_old} for range data
+#' }
 #'
 #' @examples
 #' \dontrun{
@@ -50,6 +61,9 @@
 #' 
 #' # Lift over from hg19 to hg38
 #' lifted_pos <- lift_over(variants_pos, "hg19ToHg38.over.chain")
+#' 
+#' # Lift over and keep original positions
+#' lifted_with_old <- lift_over(variants_pos, "hg19ToHg38.over.chain", keep_old_pos = TRUE)
 #'
 #' # Example with genomic ranges
 #' variants_range <- data.frame(
@@ -68,7 +82,7 @@
 #' @importFrom tibble as_tibble
 #' @importFrom dplyr transmute inner_join mutate select distinct
 #' @export
-lift_over <- function(variants, lift_over_chain) {
+lift_over <- function(variants, lift_over_chain, keep_old_pos = FALSE) {
   # check position column type
   if (all(c("start", "end") %in% colnames(variants))) {
     pos_type <- "range"
@@ -91,7 +105,7 @@ lift_over <- function(variants, lift_over_chain) {
     gr$start_old <- variants$start
     gr$end_old <- variants$end
   } else {
-    gr$pos <- variants$pos
+    gr$pos_old <- variants$pos
   }
 
   # liftover
@@ -102,20 +116,32 @@ lift_over <- function(variants, lift_over_chain) {
     tibble::as_tibble() %>%
     dplyr::distinct()
 
-  # add all variant columns back
+  # add all variant columns back, optionally remove old positions
   if (pos_type == "range") {
-    lifted %>%
-      dplyr::transmute(chr = seqnames, start_new = start, end_new = end,
-                       start = start_old, end = end_old) %>%
-      dplyr::inner_join(variants) %>%
-      dplyr::mutate(start = start_new, end = end_new) %>%
-      dplyr::select(-start_new, -end_new)
+
+    lifted <-
+      lifted %>%
+      dplyr::transmute(chr = seqnames, start, end,
+                       start_old, end_old) %>%
+      dplyr::inner_join(variants %>% dplyr::mutate(start_old = start,
+                                                   end_old = end))
+    if (keep_old_pos == FALSE) {
+      lifted <- lifted %>% dplyr::select(-start_old, -end_old)
+    }
+
   } else {
-    lifted %>%
-      dplyr::transmute(chr = seqnames, pos_new = start,
-                       pos = pos) %>%
-      dplyr::inner_join(variants) %>%
-      dplyr::mutate(pos = pos_new) %>%
-      dplyr::select(-pos_new)
+
+    lifted <-
+      lifted %>%
+      dplyr::transmute(chr = seqnames, pos = start, pos_old) %>%
+      dplyr::inner_join(variants %>% dplyr::mutate(pos_old = pos))
+
+    if (keep_old_pos == FALSE) {
+      lifted <- lifted %>% dplyr::select(-pos_old)
+    }
+
   }
+
+  # return
+  lifted
 }
