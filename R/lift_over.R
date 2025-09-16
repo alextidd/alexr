@@ -83,36 +83,45 @@
 #' @importFrom dplyr transmute inner_join mutate select distinct
 #' @export
 lift_over <- function(variants, lift_over_chain, keep_old_pos = FALSE) {
-  # check position column type
+
+  # check position column type, create granges object
   if (all(c("start", "end") %in% colnames(variants))) {
+
     pos_type <- "range"
+    gr <-
+      GRanges(seqnames = variants$chr,
+              ranges = IRanges(start = variants$start, end = variants$end),
+              start_old = variants$start, end_old = variants$end)
+
   } else if ("pos" %in% colnames(variants)) {
+
     pos_type <- "pos"
-  } else {
-    stop("Input `variants` must contain either 'start' and 'end' columns or 'pos' column.")
-  }
+    gr <-
+      GRanges(seqnames = variants$chr,
+              ranges = IRanges(start = variants$pos, end = variants$pos),
+              pos_old = variants$pos)
 
-  # convert to granges object
-  gr <-
-    GRanges(
-      seqnames = variants$chr,
-      ranges = IRanges(
-        start = ifelse(pos_type == "range", variants$start, variants$pos),
-        end = ifelse(pos_type == "range", variants$end, variants$pos)))
-
-  # set old positions as metadata
-  if (pos_type == "range") {
-    gr$start_old <- variants$start
-    gr$end_old <- variants$end
   } else {
-    gr$pos_old <- variants$pos
+
+    stop("`variants` must contain either 'start' and 'end' columns or 'pos' column.")
+
   }
 
   # liftover
-  lifted <-
+  lifted_gr <-
     gr %>%
     rtracklayer::liftOver(rtracklayer::import.chain(lift_over_chain)) %>%
-    unlist() %>%
+    unlist()
+
+  # warn if variants lost
+  if (length(gr) > length(lifted_gr)) {
+    warning(paste0(length(gr) - length(lifted_gr), " / ", length(gr),
+                   " variant(s) failed to lift over and will be removed."))
+  }
+
+  # convert to tibble
+  lifted <-
+    lifted_gr %>%
     tibble::as_tibble() %>%
     dplyr::distinct()
 
@@ -144,4 +153,5 @@ lift_over <- function(variants, lift_over_chain, keep_old_pos = FALSE) {
 
   # return
   lifted
+
 }
