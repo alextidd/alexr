@@ -34,7 +34,7 @@
 #'   alt = c("T", "C")
 #' )
 #' fasta <- FaFile("reference.fa")
-#' result <- get_mut_trinucs(variants, fasta)
+#' result <- get_trinucs(variants, fasta)
 #' }
 #'
 #' @importFrom dplyr filter rowwise mutate ungroup case_when
@@ -42,7 +42,8 @@
 #' @importFrom GenomicRanges GRanges
 #' @importFrom IRanges IRanges
 #' @export
-get_mut_trinucs <- function(variants, fasta) {
+get_trinucs <- function(variants, fasta) {
+
   variants %>%
     # get snvs only
     dplyr::filter(nchar(ref) == 1, nchar(alt) == 1) %>%
@@ -63,4 +64,5 @@ get_mut_trinucs <- function(variants, fasta) {
       trinuc_ref_py = dplyr::case_when(
         ref %in% c("A", "G") ~ chartr("TCGA", "AGCT", trinuc_ref),
         TRUE ~ trinuc_ref))
+
 }

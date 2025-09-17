@@ -36,14 +36,14 @@
 #'   trinuc_ref_py = c("ACA", "TCG", "ATG")
 #' )
 #' 
-#' plot_mut_trinucs(mutations, "Mutation Signature")
+#' plot_trinucs(mutations, "Mutation Signature")
 #' }
 #'
 #' @importFrom dplyr mutate n_distinct add_count count right_join filter
 #' @importFrom ggplot2 ggplot aes geom_col facet_grid guides guide_axis theme_minimal
 #' @importFrom ggplot2 theme element_text scale_fill_manual scale_y_continuous labs
 #' @export
-plot_mut_trinucs <- function(p_dat, p_title = "") {
+plot_trinucs <- function(p_dat, p_title = "") {
   sub_colours <-
     c("C>A" = "dodgerblue", "C>G" = "black", "C>T" = "red",
       "T>A" = "grey70", "T>C" = "olivedrab3", "T>G" = "plum2")
