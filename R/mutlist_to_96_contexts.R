@@ -80,18 +80,18 @@ muts_to_96_contexts <- function(muts, fasta) {
     mutations$pos <- as.numeric(mutations$pos)
     mutations <- mutations[(mutations$ref %in% c("A", "C", "G", "T")) &
                              (mutations$mut %in% c("A", "C", "G", "T")) &
-                             mutations$chr %in% c(1:22, "X", "Y"), ]
+                             mutations$chr %in% paste0("chr", c(1:22, "X", "Y")), ]
 
     mutations$trinuc_ref <-
       as.vector(scanFa(fasta, GRanges(mutations$chr,
-                                      IRanges(as.numeric(mutations$pos) - 1,
-                                      as.numeric(mutations$pos) + 1))))
+                                      IRanges(mutations$pos - 1,
+                                              mutations$pos + 1))))
 
     ntcomp <- c(T = "A", G = "C", C = "G", A = "T")
     mutations$sub <- paste(mutations$ref, mutations$mut, sep = ">")
     mutations$trinuc_ref_py <- mutations$trinuc_ref
 
-    for (j in 1:nrow(mutations)) {
+    for (j in seq_along(mutations)) {
       if (mutations$ref[j] %in% c("A", "G")) {
         mutations$sub[j] <-
           paste(ntcomp[mutations$ref[j]], ntcomp[mutations$mut[j]], sep = ">")
