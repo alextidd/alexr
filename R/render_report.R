@@ -47,7 +47,7 @@ render_report <- function(report, rerun = FALSE) {
   outdir <- file.path("reports", subdir, date)
   basename <- paste0(date, "_", name)
   cache_path <- file.path(outdir, paste0(basename, "_cache/"))
-  dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
+  dir.create(cache_path, showWarnings = FALSE, recursive = TRUE)
   rmarkdown::render(
     report,
     output_file = paste0(basename, ".html"),
