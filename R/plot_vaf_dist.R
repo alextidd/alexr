@@ -69,7 +69,7 @@ plot_vaf_dist <- function(p_dat, p_title = "") {
       alt_vaf = ifelse(total_depth == 0, 0, alt_vaf),
       total_depth_bin = cut(
         total_depth, breaks = c(-Inf, 0, 1, 5, 10, 20, 50, 100, Inf),
-        labels = c("0", "1", "<5", "<10", "10–20", "20–50", "50–100", ">100")),
+        labels = c("0", "1", "2-5", "6-10", "11–20", "21–50", "51–100", ">100")),
       alt_vaf_bin = cut(alt_vaf, breaks = seq(0, 1, length.out = 30 + 1),
                         include.lowest = TRUE),
       alt_vaf_min = stringr::str_extract(alt_vaf_bin, "[\\d\\.]+") %>% as.numeric(),
