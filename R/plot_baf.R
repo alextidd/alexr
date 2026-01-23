@@ -8,7 +8,7 @@
 #'   \describe{
 #'     \item{chr}{Chromosome (will be converted to factor with levels 1-22, X, Y)}
 #'     \item{pos}{Position on chromosome}
-#'     \item{mut_vaf}{Mutation variant allele frequency}
+#'     \item{alt_vaf}{Mutation variant allele frequency}
 #'     \item{total_depth}{Total sequencing depth (filtered to >20)}
 #'   }
 #' @param genes A character vector of gene names for annotation, or NULL.
@@ -47,7 +47,7 @@
 #' variants <- data.frame(
 #'   chr = c("1", "2", "1", "X"),
 #'   pos = c(1000000, 2000000, 1500000, 500000),
-#'   mut_vaf = c(0.3, 0.7, 0.45, 0.6),
+#'   alt_vaf = c(0.3, 0.7, 0.45, 0.6),
 #'   total_depth = c(50, 80, 60, 40)
 #' )
 #' 
@@ -99,7 +99,7 @@ plot_baf <- function(p_dat, genes = NULL, refcds = NULL, p_alpha = 0.05, p_size 
   p_dat2 <-
     p_dat %>%
     dplyr::filter(total_depth > 20) %>%
-    dplyr::mutate(mut_baf = 1 - mut_vaf,
+    dplyr::mutate(alt_baf = 1 - alt_vaf,
                   chr = factor(sub("^chr", "", chr),
                                levels = c(as.character(1:22), "X", "Y"))) %>%
     # get alternating colours and chr bounds
@@ -107,7 +107,7 @@ plot_baf <- function(p_dat, genes = NULL, refcds = NULL, p_alpha = 0.05, p_size 
     dplyr::mutate(chr_alternating = dplyr::cur_group_id() %% 2,
                   min_pos = min(pos), max_pos = max(pos)) %>%
     # plot
-    tidyr::pivot_longer(cols = c("mut_vaf", "mut_baf"), names_to = "vaf_type")
+    tidyr::pivot_longer(cols = c("alt_vaf", "alt_baf"), names_to = "vaf_type")
 
   # plot
   p <-
@@ -132,7 +132,7 @@ plot_baf <- function(p_dat, genes = NULL, refcds = NULL, p_alpha = 0.05, p_size 
           strip.background = element_rect(color = "grey", fill = NA,
                                           linewidth = 0, linetype = "solid"),
           axis.text.x = element_blank(), axis.ticks.x = element_blank()) +
-    labs(title = paste(opts$id, "-", p_source))
+    labs(title = opts$id)
 
   # add gene annotations
   if (!is.null(p_genes)) {

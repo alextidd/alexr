@@ -11,7 +11,7 @@ plot_baf(p_dat, genes = NULL, refcds = NULL, p_alpha = 0.05, p_size = 0.01)
 \describe{
 \item{chr}{Chromosome (will be converted to factor with levels 1-22, X, Y)}
 \item{pos}{Position on chromosome}
-\item{mut_vaf}{Mutation variant allele frequency}
+\item{alt_vaf}{Mutation variant allele frequency}
 \item{total_depth}{Total sequencing depth (filtered to >20)}
 }}
 
@@ -61,7 +61,7 @@ library(ggh4x)
 variants <- data.frame(
   chr = c("1", "2", "1", "X"),
   pos = c(1000000, 2000000, 1500000, 500000),
-  mut_vaf = c(0.3, 0.7, 0.45, 0.6),
+  alt_vaf = c(0.3, 0.7, 0.45, 0.6),
   total_depth = c(50, 80, 60, 40)
 )
 
