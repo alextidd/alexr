@@ -91,7 +91,7 @@ muts_to_96_contexts <- function(muts, fasta) {
     mutations$sub <- paste(mutations$ref, mutations$mut, sep = ">")
     mutations$trinuc_ref_py <- mutations$trinuc_ref
 
-    for (j in seq_along(mutations)) {
+    for (j in seq_len(nrow(mutations))) {
       if (mutations$ref[j] %in% c("A", "G")) {
         mutations$sub[j] <-
           paste(ntcomp[mutations$ref[j]], ntcomp[mutations$mut[j]], sep = ">")
