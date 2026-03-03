@@ -40,13 +40,15 @@
 #'
 #' @importFrom rmarkdown render
 #' @export
-render_report <- function(report, rerun = FALSE) {
+render_report <- function(report, rerun = FALSE, cache_path = NULL) {
   subdir <- strsplit(report, "/")[[1]][2]
   name <- sub("^[^_]+_", "", subdir)
   date <- format(Sys.Date(), "%Y%m%d")
   outdir <- file.path("reports", subdir, date)
   basename <- paste0(date, "_", name)
-  cache_path <- file.path(outdir, paste0(basename, "_cache/"))
+  if (is.null(cache_path)) {
+    cache_path <- file.path(outdir, paste0(basename, "_cache/"))
+  }
   dir.create(cache_path, showWarnings = FALSE, recursive = TRUE)
   rmarkdown::render(
     report,
