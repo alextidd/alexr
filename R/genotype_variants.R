@@ -9,6 +9,7 @@
 #' @param min_bq Minimum base quality score for reads.
 #' @param min_mq Minimum mapping quality score for reads.
 #' @param mask Genomic regions to mask during analysis.
+#' @param pileup Logical; if TRUE, returns full pileup counts for each base and indel at each site. If FALSE, returns summary statistics for ref and alt.
 #'
 #' @return A tibble with columns: chr, pos, ref, alt, total_depth, alt_depth, alt_vaf.
 #'   The alt_vaf column contains the variant allele frequency calculated as alt_depth / total_depth.
@@ -19,33 +20,44 @@
 #' }
 #'
 #' @export
+#'
+#' @return If pileup = FALSE: a tibble with columns chr, pos, ref, alt, total_depth, alt_depth, ref_depth, alt_vaf (variant allele frequency, alt_depth / total_depth). If pileup = TRUE: a tibble with columns chr, pos, A, T, C, G, N, ins, del, total_depth (base and indel counts per site).
+#'   Complex variants are automatically filtered out and not genotyped.
+#'
+#' @examples
+#' \dontrun{
+#' variants <- data.frame(chr = "1", pos = 1000, ref = "A", alt = "T")
+#' genotype_variants(variants, "sample.bam", min_bq = 30, min_mq = 30, mask = 3844)
+#' genotype_variants(variants, "sample.bam", min_bq = 30, min_mq = 30, pileup = TRUE)
+#' }
+#'
+#' @export
 genotype_variants <- function(variants, bam, min_bq, min_mq, mask = 0, pileup = FALSE) {
 
-  # get and type variants
-  vars <- alexr::type_variants(variants)
+  if (pileup == FALSE) {
+    # get and type variants
+    vars <- alexr::type_variants(variants)
 
-  # check for variants that are not snv / ins / del
-  if ("complex" %in% vars$type) {
-    message("Complex variants are not supported!")
-    message(paste(vars %>% dplyr::filter(type == "complex") %>% nrow(),
-                  "complex variant(s) were found and will be removed."))
-    vars <- vars %>% dplyr::filter(type != "complex")
+    # check for variants that are not snv / ins / del
+    if ("complex" %in% vars$type) {
+      message("Complex variants are not supported!")
+      message(paste(vars %>% dplyr::filter(type == "complex") %>% nrow(),
+                    "complex variant(s) were found and will be removed."))
+      vars <- vars %>% dplyr::filter(type != "complex")
+    }
+  } else {
+    vars <- variants
   }
 
   # genotype all sites
   geno <-
     vars %>%
-    dplyr::select(chr, pos, type, dplyr::any_of(if (pileup) character(0) else c("ref", "alt"))) %>%
+    dplyr::select(chr, pos, dplyr::any_of(if (pileup) character(0) else c("ref", "alt", "type"))) %>%
     dplyr::distinct() %>%
-    purrr::pmap(function(chr, pos, type, ref = NULL, alt = NULL) {
+    purrr::pmap(function(chr, pos, type = "", ref = NULL, alt = NULL) {
       # testing: # vars %>% dplyr::distinct(chr, pos, ref, alt, type) %>% as.list() %>% list2env(envir = globalenv()); min_bq <- 30; min_mq <- 30; mask <- 3844
 
       paste(chr, pos, ref, alt, type, "\n") %>% cat()
-
-      # check type
-      if (!(type %in% c("snv", "dnv", "mnv", "ins", "del"))) {
-        stop(paste0("Variant type '", type, "' not recognized!"))
-      }
 
       # look ahead if deletion
       if (type == "del") {
@@ -79,6 +91,11 @@ genotype_variants <- function(variants, bam, min_bq, min_mq, mask = 0, pileup = 
           total_depth = total_depth)
 
       } else {
+
+        # check type
+        if (!(type %in% c("snv", "dnv", "mnv", "ins", "del"))) {
+          stop(paste0("Variant type '", type, "' not recognized!"))
+        }
 
         # calculate ref depth
         if (type == "ins") {

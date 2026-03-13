@@ -16,10 +16,15 @@ genotype_variants(variants, bam, min_bq, min_mq, mask = 0, pileup = FALSE)
 \item{min_mq}{Minimum mapping quality score for reads.}
 
 \item{mask}{Genomic regions to mask during analysis.}
+
+\item{pileup}{Logical; if TRUE, returns full pileup counts for each base and indel at each site. If FALSE, returns summary statistics for ref and alt.}
 }
 \value{
 A tibble with columns: chr, pos, ref, alt, total_depth, alt_depth, alt_vaf.
 The alt_vaf column contains the variant allele frequency calculated as alt_depth / total_depth.
+
+If pileup = FALSE: a tibble with columns chr, pos, ref, alt, total_depth, alt_depth, ref_depth, alt_vaf (variant allele frequency, alt_depth / total_depth). If pileup = TRUE: a tibble with columns chr, pos, A, T, C, G, N, ins, del, total_depth (base and indel counts per site).
+Complex variants are automatically filtered out and not genotyped.
 }
 \description{
 This function genotypes a set of variants by querying a BAM file and
@@ -30,6 +35,12 @@ SNVs, insertions, and deletions, but filters out complex variants.
 \dontrun{
 variants <- data.frame(chr = "1", pos = 1000, ref = "A", alt = "T")
 genotype_variants(variants, "sample.bam", min_bq = 30, min_mq = 30, mask = 3844)
+}
+
+\dontrun{
+variants <- data.frame(chr = "1", pos = 1000, ref = "A", alt = "T")
+genotype_variants(variants, "sample.bam", min_bq = 30, min_mq = 30, mask = 3844)
+genotype_variants(variants, "sample.bam", min_bq = 30, min_mq = 30, pileup = TRUE)
 }
 
 }
