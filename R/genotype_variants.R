@@ -53,8 +53,8 @@ genotype_variants <- function(variants, bam, min_bq, min_mq, mask = 0) {
       }
 
       # query bam
-      calls <- deepSNV::bam2R(bam, chr, pos_i, pos_i, mask = opts$mask,
-                              q = opts$min_bq, mq = opts$min_mq)
+      calls <- deepSNV::bam2R(bam, chr, pos_i, pos_i, mask = mask,
+                              q = min_bq, mq = min_mq)
 
       # calculate total depth
       total_depth <-

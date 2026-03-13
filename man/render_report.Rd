@@ -4,7 +4,7 @@
 \alias{render_report}
 \title{Render R Markdown report with organized output structure}
 \usage{
-render_report(report, rerun = FALSE)
+render_report(report, rerun = FALSE, cache_path = NULL)
 }
 \arguments{
 \item{report}{Character string specifying the path to the R Markdown file to render.
