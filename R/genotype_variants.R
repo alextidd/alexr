@@ -19,7 +19,7 @@
 #' }
 #'
 #' @export
-genotype_variants <- function(variants, bam, min_bq, min_mq, mask = 0) {
+genotype_variants <- function(variants, bam, min_bq, min_mq, mask = 0, pileup = FALSE) {
 
   # get and type variants
   vars <- alexr::type_variants(variants)
@@ -35,8 +35,10 @@ genotype_variants <- function(variants, bam, min_bq, min_mq, mask = 0) {
   # genotype all sites
   geno <-
     vars %>%
-    dplyr::distinct(chr, pos, ref, alt, type) %>%
-    purrr::pmap(function(chr, pos, ref, alt, type) {
+    dplyr::select(chr, pos, type, dplyr::any_of(if (pileup) character(0) else c("ref", "alt"))) %>%
+    dplyr::distinct() %>%
+    purrr::pmap(function(chr, pos, type, ref = NULL, alt = NULL) {
+      # testing: # vars %>% dplyr::distinct(chr, pos, ref, alt, type) %>% as.list() %>% list2env(envir = globalenv()); min_bq <- 30; min_mq <- 30; mask <- 3844
 
       paste(chr, pos, ref, alt, type, "\n") %>% cat()
 
@@ -61,23 +63,56 @@ genotype_variants <- function(variants, bam, min_bq, min_mq, mask = 0) {
         sum(calls[, c("A", "C", "G", "T", "a", "c", "g", "t", "-", "_",
                       "N", "n")],
             na.rm = TRUE)
+      
+      # return full pileup
+      if (pileup == TRUE) {
 
-      # calculate alt depth
-      if (type == "del") {
-        alt_depth <- sum(calls[, c("-", "_")])
-      } else if (type == "ins") {
-        alt_depth <- sum(calls[, c("INS", "ins")])
+        tibble::tibble(
+          chr = chr, pos = pos,
+          A   = calls[1, "A"]   + calls[1, "a"],
+          T   = calls[1, "T"]   + calls[1, "t"],
+          C   = calls[1, "C"]   + calls[1, "c"],
+          G   = calls[1, "G"]   + calls[1, "g"],
+          N   = calls[1, "N"]   + calls[1, "n"],
+          ins = calls[1, "INS"] + calls[1, "ins"],
+          del = calls[1, "-"]   + calls[1, "_"],
+          total_depth = total_depth)
+
       } else {
-        alt_i <- unlist(strsplit(alt, ""))[1]
-        alt_depth <- calls[1, alt_i] + calls[1, tolower(alt_i)]
-      }
 
-      # return
-      tibble::tibble(chr = chr, pos = pos, ref = ref, alt = alt,
-                     total_depth = total_depth, alt_depth = alt_depth) %>%
-        dplyr::mutate(alt_vaf = alt_depth / total_depth)
+        # calculate ref depth
+        if (type == "ins") {
+          # ref = no insertion; everything that isn't an insertion read
+          ref_depth <- total_depth - alt_depth
+        } else {
+          # snv / del: ref = reads matching the first base of ref allele
+          # (for del, bam2R is already queried at pos+1, so ref_i is correct)
+          ref_i <- unlist(strsplit(ref, ""))[1]
+          ref_depth <- calls[1, ref_i] + calls[1, tolower(ref_i)]
+        }
+
+        # calculate alt depth
+        if (type == "del") {
+          alt_depth <- sum(calls[, c("-", "_")])
+        } else if (type == "ins") {
+          alt_depth <- sum(calls[, c("INS", "ins")])
+        } else {
+          alt_i <- unlist(strsplit(alt, ""))[1]
+          alt_depth <- calls[1, alt_i] + calls[1, tolower(alt_i)]
+        }
+
+        # return
+        tibble::tibble(chr = chr, pos = pos, ref = ref, alt = alt,
+                       total_depth = total_depth,
+                       alt_depth = alt_depth, ref_depth = ref_depth) %>%
+          dplyr::mutate(alt_vaf = alt_depth / total_depth)
+
+      }
 
     }) %>%
     dplyr::bind_rows()
+  
+  # return
+  return(geno)
 
 }

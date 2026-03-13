@@ -4,7 +4,7 @@
 \alias{genotype_variants}
 \title{Genotype variants in a BAM file using deepSNV::bam2R.}
 \usage{
-genotype_variants(variants, bam, min_bq, min_mq, mask = 0)
+genotype_variants(variants, bam, min_bq, min_mq, mask = 0, pileup = FALSE)
 }
 \arguments{
 \item{variants}{A data frame containing variant information with columns: chr, pos, ref, alt.}
