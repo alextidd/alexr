@@ -70,10 +70,9 @@ genotype_variants <- function(variants, bam, min_bq, min_mq, mask = 0, pileup = 
       calls <- deepSNV::bam2R(bam, chr, pos_i, pos_i, mask = mask,
                               q = min_bq, mq = min_mq)
 
-      # calculate total depth
+      # calculate total depth (excl N calls)
       total_depth <-
-        sum(calls[, c("A", "C", "G", "T", "a", "c", "g", "t", "-", "_",
-                      "N", "n")],
+        sum(calls[, c("A", "C", "G", "T", "a", "c", "g", "t", "-", "_")],
             na.rm = TRUE)
       
       # return full pileup
