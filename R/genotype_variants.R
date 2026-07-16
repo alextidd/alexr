@@ -96,6 +96,16 @@ genotype_variants <- function(variants, bam, min_bq, min_mq, mask = 0, pileup = 
           stop(paste0("Variant type '", type, "' not recognized!"))
         }
 
+        # calculate alt depth
+        if (type == "del") {
+          alt_depth <- sum(calls[, c("-", "_")])
+        } else if (type == "ins") {
+          alt_depth <- sum(calls[, c("INS", "ins")])
+        } else {
+          alt_i <- unlist(strsplit(alt, ""))[1]
+          alt_depth <- calls[1, alt_i] + calls[1, tolower(alt_i)]
+        }
+
         # calculate ref depth
         if (type == "ins") {
           # ref = no insertion; everything that isn't an insertion read
@@ -105,16 +115,6 @@ genotype_variants <- function(variants, bam, min_bq, min_mq, mask = 0, pileup = 
           # (for del, bam2R is already queried at pos+1, so ref_i is correct)
           ref_i <- unlist(strsplit(ref, ""))[1]
           ref_depth <- calls[1, ref_i] + calls[1, tolower(ref_i)]
-        }
-
-        # calculate alt depth
-        if (type == "del") {
-          alt_depth <- sum(calls[, c("-", "_")])
-        } else if (type == "ins") {
-          alt_depth <- sum(calls[, c("INS", "ins")])
-        } else {
-          alt_i <- unlist(strsplit(alt, ""))[1]
-          alt_depth <- calls[1, alt_i] + calls[1, tolower(alt_i)]
         }
 
         # return
