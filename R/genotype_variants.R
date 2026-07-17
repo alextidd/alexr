@@ -74,7 +74,16 @@ genotype_variants <- function(variants, bam, min_bq, min_mq, mask = 0, pileup = 
       total_depth <-
         sum(calls[, c("A", "C", "G", "T", "a", "c", "g", "t", "-", "_")],
             na.rm = TRUE)
-      
+
+      # bam2R counts INS/ins independently of the base quality (q) filter, so
+      # a read supporting an insertion can still have its anchor base masked
+      # to N and excluded above. Include N calls here so alt_depth (INS/ins)
+      # can never exceed total_depth, which would otherwise make ref_depth
+      # negative and alt_vaf exceed 1.
+      if (type == "ins") {
+        total_depth <- total_depth + sum(calls[, c("N", "n")], na.rm = TRUE)
+      }
+
       # return full pileup
       if (pileup == TRUE) {
 
