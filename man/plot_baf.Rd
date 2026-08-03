@@ -4,7 +4,15 @@
 \alias{plot_baf}
 \title{Plot B-allele frequency (BAF) across chromosomes}
 \usage{
-plot_baf(p_dat, genes = NULL, refcds = NULL, p_alpha = 0.05, p_size = 0.01)
+plot_baf(
+  p_dat,
+  p_title = "",
+  genes = NULL,
+  refcds = NULL,
+  p_alpha = 0.05,
+  p_size = 0.01,
+  min_depth = 20
+)
 }
 \arguments{
 \item{p_dat}{A data frame containing variant data with columns:
@@ -12,8 +20,10 @@ plot_baf(p_dat, genes = NULL, refcds = NULL, p_alpha = 0.05, p_size = 0.01)
 \item{chr}{Chromosome (will be converted to factor with levels 1-22, X, Y)}
 \item{pos}{Position on chromosome}
 \item{alt_vaf}{Mutation variant allele frequency}
-\item{total_depth}{Total sequencing depth (filtered to >20)}
+\item{total_depth}{Total sequencing depth (filtered to > min_depth)}
 }}
+
+\item{p_title}{Title for the plot.}
 
 \item{genes}{A character vector of gene names for annotation, or NULL.
 If provided, gene coordinates will be looked up using the refcds file.
@@ -25,6 +35,8 @@ Required if genes are specified. Default is NULL.}
 \item{p_alpha}{Transparency level for points (0-1). Default is 0.05.}
 
 \item{p_size}{Size of points. Default is 0.01.}
+
+\item{min_depth}{Minimum sequencing depth for filtering variants. Default is 20.}
 }
 \value{
 A ggplot object showing BAF values across chromosomes.
@@ -37,7 +49,7 @@ backgrounds, gene annotations, and a reference line at 0.5.
 \details{
 The function creates a BAF plot with the following features:
 \itemize{
-\item Filters variants to those with total_depth > 20
+\item Filters variants to those with total_depth > min_depth
 \item Calculates BAF as 1 - VAF (B-allele frequency)
 \item Displays both VAF and BAF values as points
 \item Uses alternating gray/white backgrounds for chromosomes
@@ -46,10 +58,6 @@ The function creates a BAF plot with the following features:
 \item Optional gene annotation as vertical lines
 \item Removes x-axis labels for cleaner display
 }
-}
-\note{
-This function has dependencies on undefined variables (opts, p_source)
-that may need to be defined in the calling environment or passed as parameters.
 }
 \examples{
 \dontrun{

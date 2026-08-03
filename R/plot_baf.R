@@ -9,22 +9,23 @@
 #'     \item{chr}{Chromosome (will be converted to factor with levels 1-22, X, Y)}
 #'     \item{pos}{Position on chromosome}
 #'     \item{alt_vaf}{Mutation variant allele frequency}
-#'     \item{total_depth}{Total sequencing depth (filtered to >20)}
+#'     \item{total_depth}{Total sequencing depth (filtered to > min_depth)}
 #'   }
 #' @param genes A character vector of gene names for annotation, or NULL.
 #'   If provided, gene coordinates will be looked up using the refcds file.
 #'   Default is NULL.
 #' @param refcds Path to RefCDS reference file for gene coordinate lookup.
 #'   Required if genes are specified. Default is NULL.
+#' @param p_title Title for the plot.
 #' @param p_alpha Transparency level for points (0-1). Default is 0.05.
 #' @param p_size Size of points. Default is 0.01.
-#'
+#' @param min_depth Minimum sequencing depth for filtering variants. Default is 20.
 #' @return A ggplot object showing BAF values across chromosomes.
 #'
 #' @details 
 #' The function creates a BAF plot with the following features:
 #' \itemize{
-#'   \item Filters variants to those with total_depth > 20
+#'   \item Filters variants to those with total_depth > min_depth
 #'   \item Calculates BAF as 1 - VAF (B-allele frequency)
 #'   \item Displays both VAF and BAF values as points
 #'   \item Uses alternating gray/white backgrounds for chromosomes
@@ -33,9 +34,6 @@
 #'   \item Optional gene annotation as vertical lines
 #'   \item Removes x-axis labels for cleaner display
 #' }
-#'
-#' @note This function has dependencies on undefined variables (opts, p_source)
-#'   that may need to be defined in the calling environment or passed as parameters.
 #'
 #' @examples
 #' \dontrun{
@@ -67,7 +65,7 @@
 #' @importFrom purrr set_names map map_lgl
 #' @importFrom tibble tibble
 #' @export
-plot_baf <- function(p_dat, genes = NULL, refcds = NULL, p_alpha = 0.05, p_size = 0.01) {
+plot_baf <- function(p_dat, p_title = "", genes = NULL, refcds = NULL, p_alpha = 0.05, p_size = 0.01, min_depth = 20) {
 
   # libraries
   library(ggplot2)
@@ -98,7 +96,7 @@ plot_baf <- function(p_dat, genes = NULL, refcds = NULL, p_alpha = 0.05, p_size 
   # prep data
   p_dat2 <-
     p_dat %>%
-    dplyr::filter(total_depth > 20) %>%
+    dplyr::filter(total_depth > min_depth) %>%
     dplyr::mutate(alt_baf = 1 - alt_vaf,
                   chr = factor(sub("^chr", "", chr),
                                levels = c(as.character(1:22), "X", "Y"))) %>%
@@ -114,7 +112,7 @@ plot_baf <- function(p_dat, genes = NULL, refcds = NULL, p_alpha = 0.05, p_size 
     p_dat2 %>%
     ggplot(aes(x = pos, y = value)) +
     # add alternating coloured chromosomes
-    geom_rect(aes(ymin = 0, ymax = 1, xmin = min_pos, xmax = max_pos,
+    geom_rect(aes(ymin = -Inf, ymax = Inf, xmin = -Inf, xmax = Inf,
                   fill = as.factor(chr_alternating)),
               show.legend = FALSE) +
     # add line at vaf = 0.5
@@ -122,7 +120,7 @@ plot_baf <- function(p_dat, genes = NULL, refcds = NULL, p_alpha = 0.05, p_size 
     # add baf points
     geom_point(size = p_size, alpha = p_alpha) +
     # add baf bands
-    scale_x_continuous(expand = c(0, 0)) +
+    scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) +
     scale_fill_manual(values = c("white", "#e3e3e3")) +
     ggh4x::facet_grid2(. ~ chr, scales = "free_x", space = "free_x") +
     theme_classic() +
@@ -132,7 +130,7 @@ plot_baf <- function(p_dat, genes = NULL, refcds = NULL, p_alpha = 0.05, p_size 
           strip.background = element_rect(color = "grey", fill = NA,
                                           linewidth = 0, linetype = "solid"),
           axis.text.x = element_blank(), axis.ticks.x = element_blank()) +
-    labs(title = opts$id)
+    labs(title = p_title)
 
   # add gene annotations
   if (!is.null(p_genes)) {
